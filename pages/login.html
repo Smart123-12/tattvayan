@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – TATTVAYAN AI Vidya Platform</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Noto+Serif+Gujarati:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--grad-hero);
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+    }
+    .auth-bg-mandala {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .auth-bg-mandala.left { left: -250px; top: 50%; transform: translateY(-50%); background: radial-gradient(circle, rgba(255,153,51,0.06), transparent 70%); animation: rotate 40s linear infinite; }
+    .auth-bg-mandala.right { right: -200px; top: 30%; background: radial-gradient(circle, rgba(255,215,0,0.06), transparent 70%); animation: rotate 25s linear infinite reverse; }
+    
+    .auth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 900px;
+      width: 100%;
+      background: var(--bg-navy);
+      border: var(--border-gold);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-deep);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .auth-left {
+      background: linear-gradient(160deg, #1a0a00, var(--deep-red), #0a0e1a);
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' stroke='rgba(255,215,0,0.05)' fill='none' stroke-width='0.5'/%3E%3Ccircle cx='50' cy='50' r='30' stroke='rgba(255,215,0,0.05)' fill='none' stroke-width='0.5'/%3E%3C/svg%3E") repeat;
+      opacity: 0.5;
+    }
+    .auth-diya { font-size: 4rem; animation: float 3s ease-in-out infinite; margin-bottom: 16px; }
+    .auth-brand-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      background: var(--grad-saffron);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    .auth-brand-sub { font-family: var(--font-gujarati); font-size: 0.95rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
+    .auth-quote {
+      font-style: italic;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      padding: 0 16px;
+      border-top: 1px solid rgba(255,215,0,0.2);
+      padding-top: 20px;
+    }
+    .auth-features-list { list-style: none; margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+    .auth-features-list li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.82rem; color: rgba(255,255,255,0.7);
+    }
+    .auth-features-list li::before { content: '✓'; color: var(--saffron); font-weight: 700; }
+    
+    .auth-right {
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      background: rgba(255,255,255,0.05);
+      border-radius: var(--radius-md);
+      padding: 4px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .auth-tab.active {
+      background: var(--grad-saffron);
+      color: #1a0a00;
+    }
+    
+    .auth-form-section { display: none; }
+    .auth-form-section.active { display: block; }
+    
+    .auth-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .auth-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 28px; }
+    
+    .social-auth { display: flex; gap: 12px; margin-bottom: 20px; }
+    .social-auth-btn {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: var(--border-card);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .social-auth-btn:hover { border-color: rgba(255,153,51,0.3); background: rgba(255,153,51,0.05); color: var(--text-primary); }
+    
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+    .divider-text { font-size: 0.75rem; color: var(--text-muted); }
+    
+    .input-icon-wrap { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
+    .input-icon-wrap .form-input { padding-left: 42px; }
+    .input-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--grad-saffron);
+      border: none;
+      border-radius: var(--radius-md);
+      color: #1a0a00;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition-mid);
+      font-family: var(--font-body);
+      box-shadow: 0 4px 20px rgba(255,153,51,0.4);
+      margin-top: 8px;
+    }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,153,51,0.5); }
+    .submit-btn:active { transform: translateY(0); }
+    
+    .auth-footer-text { 
+      text-align: center; font-size: 0.82rem; color: var(--text-secondary); margin-top: 16px;
+    }
+    .auth-footer-text a { color: var(--saffron); text-decoration: none; font-weight: 600; }
+    
+    .otp-input-group { display: flex; gap: 10px; justify-content: center; }
+    .otp-input {
+      width: 48px; height: 56px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.05);
+      border: var(--border-card);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+    .otp-input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(255,153,51,0.15); }
+    
+    .otp-section { display: none; }
+    .otp-section.active { display: block; }
+    
+    @media (max-width: 768px) {
+      .auth-container { grid-template-columns: 1fr; max-width: 440px; }
+      .auth-left { display: none; }
+      .auth-right { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-bg-mandala left"></div>
+    <div class="auth-bg-mandala right"></div>
+    
+    <div class="auth-container">
+      <!-- Left Panel -->
+      <div class="auth-left">
+        <div class="auth-diya">🪔</div>
+        <div class="auth-brand-name">TATTVAYAN</div>
+        <div class="auth-brand-sub">AI Vidya Platform for Gujarat</div>
+        <ul class="auth-features-list">
+          <li>500+ HD Video Lectures</li>
+          <li>AI Doubt Chatbot (Gujarati)</li>
+          <li>GPSC Mock Tests</li>
+          <li>Personalized Study Plans</li>
+          <li>Gamified Learning</li>
+        </ul>
+        <div class="auth-quote">
+          "सा विद्या या विमुक्तये"<br/>
+          That is knowledge which liberates
+        </div>
+      </div>
+      
+      <!-- Right Panel -->
+      <div class="auth-right">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+        
+        <!-- Login Form -->
+        <div class="auth-form-section active" id="loginForm">
+          <div class="auth-title">Welcome Back 🙏</div>
+          <div class="auth-subtitle">ફરી પધારો! Continue your learning journey</div>
+          
+          <div class="social-auth">
+            <a href="#" class="social-auth-btn">
+              <span>G</span> Google
+            </a>
+            <a href="#" class="social-auth-btn">
+              <span>📱</span> Phone OTP
+            </a>
+          </div>
+          
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">OR</span>
+            <div class="divider-line"></div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📧</span>
+              <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com"/>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" class="form-input" id="loginPass" placeholder="Enter your password"/>
+              <button class="input-toggle" onclick="togglePass('loginPass')">👁️</button>
+            </div>
+          </div>
+          
+          <div style="text-align:right;margin-bottom:16px;">
+            <a href="#" style="font-size:0.8rem;color:var(--saffron);text-decoration:none;">Forgot Password?</a>
+          </div>
+          
+          <button class="submit-btn" onclick="handleLogin()">🚀 Login to TATTVAYAN</button>
+          
+          <div class="auth-footer-text">
+            New here? <a href="#" onclick="switchTab('signup')">Create Free Account</a>
+          </div>
+        </div>
+        
+        <!-- Signup Form -->
+        <div class="auth-form-section" id="signupForm">
+          <div class="auth-title">Join TATTVAYAN 🌟</div>
+          <div class="auth-subtitle">Free account — Start your IAS/GPSC journey today</div>
+          
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" class="form-input" id="signupName" placeholder="Your full name"/>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📧</span>
+              <input type="email" class="form-input" id="signupEmail" placeholder="your@email.com"/>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">📱</span>
+              <input type="tel" class="form-input" id="signupPhone" placeholder="+91 XXXXX XXXXX"/>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-icon-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" class="form-input" id="signupPass" placeholder="Create a strong password"/>
+              <button class="input-toggle" onclick="togglePass('signupPass')">👁️</button>
+            </div>
+          </div>
+          
+          <button class="submit-btn" onclick="handleSignup()">🎓 Create Free Account</button>
+          
+          <div class="auth-footer-text">
+            Already have an account? <a href="#" onclick="switchTab('login')">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((btn, i) => {
+        btn.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+      });
+      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+      document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+    }
+    
+    function togglePass(id) {
+      const inp = document.getElementById(id);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const pass = document.getElementById('loginPass').value;
+      if (!email || !pass) { alert('Please fill all fields'); return; }
+      // Simulate login
+      document.querySelector('.submit-btn').textContent = '⏳ Logging in...';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+    }
+    
+    function handleSignup() {
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const phone = document.getElementById('signupPhone').value;
+      const pass = document.getElementById('signupPass').value;
+      if (!name || !email || !phone || !pass) { alert('Please fill all fields'); return; }
+      document.querySelector('.submit-btn').textContent = '⏳ Creating account...';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+    }
+  </script>
+</body>
+</html>

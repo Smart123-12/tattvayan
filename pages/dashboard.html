@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – TATTVAYAN AI Vidya Platform</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Noto+Serif+Gujarati:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ===== CHART STYLES ===== */
+    .chart-container {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chart-pill {
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255,153,51,0.1);
+      color: var(--saffron);
+    }
+    
+    /* ===== BAR CHART ===== */
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+    .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height 1s ease; background: var(--grad-saffron); min-height: 4px; }
+    .bar-label { font-size: 0.62rem; color: var(--text-muted); }
+    .bar-val { font-size: 0.68rem; color: var(--saffron); font-weight: 600; }
+    
+    /* ===== STREAK CALENDAR ===== */
+    .streak-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .streak-day {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      transition: all var(--transition-fast);
+    }
+    .streak-day.active { background: var(--saffron); }
+    .streak-day.today { background: var(--gold); box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+    .streak-day.partial { background: rgba(255,153,51,0.4); }
+    
+    /* ===== AI PLAN ===== */
+    .plan-list { display: flex; flex-direction: column; gap: 12px; }
+    .plan-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border: var(--border-card);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+    .plan-item:hover { border-color: rgba(255,153,51,0.3); background: rgba(255,153,51,0.04); }
+    .plan-item.done { opacity: 0.5; }
+    .plan-item.done .plan-title { text-decoration: line-through; }
+    .plan-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .plan-item.done .plan-check { background: #4CAF50; border-color: #4CAF50; color: white; }
+    .plan-info { flex: 1; }
+    .plan-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .plan-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .plan-time { font-size: 0.72rem; color: var(--saffron); }
+    
+    /* ===== BADGE COLLECTION ===== */
+    .badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .badge-item {
+      text-align: center;
+      padding: 16px 8px;
+      background: rgba(255,255,255,0.03);
+      border: var(--border-card);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    .badge-item.earned { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+    .badge-item:hover { transform: translateY(-3px); }
+    .badge-emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+    .badge-name { font-size: 0.68rem; font-weight: 600; color: var(--text-secondary); }
+    .badge-item.locked .badge-emoji { filter: grayscale(1) opacity(0.4); }
+    
+    /* ===== LEADERBOARD ===== */
+    .leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
+    .leader-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border: var(--border-card);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    .leader-item:hover { background: rgba(255,153,51,0.05); border-color: rgba(255,153,51,0.2); }
+    .leader-item.you { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.05); }
+    .leader-rank {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .leader-rank.top { background: var(--grad-saffron); color: #1a0a00; }
+    .leader-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--grad-saffron);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #1a0a00;
+      flex-shrink: 0;
+    }
+    .leader-info { flex: 1; }
+    .leader-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+    .leader-score { font-size: 0.7rem; color: var(--text-muted); }
+    .leader-pts { font-size: 0.85rem; font-weight: 700; color: var(--gold); }
+    
+    /* ===== RING PROGRESS ===== */
+    .ring-group { display: flex; gap: 20px; flex-wrap: wrap; }
+    .ring-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .ring-svg { width: 70px; height: 70px; }
+    .ring-label { font-size: 0.7rem; color: var(--text-secondary); text-align: center; }
+    
+    /* ===== DASHBOARD GRID ===== */
+    .dash-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; }
+    .dash-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .dash-grid-full { margin-bottom: 24px; }
+  </style>
+</head>
+<body class="app-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link active">
+        <span class="sidebar-link-icon">🏠</span> Dashboard
+      </a>
+      <a href="lectures.html" class="sidebar-link">
+        <span class="sidebar-link-icon">🎥</span> Lecture Library
+      </a>
+      <a href="quiz.html" class="sidebar-link">
+        <span class="sidebar-link-icon">📝</span> Quiz & Practice
+      </a>
+      <a href="mocktest.html" class="sidebar-link">
+        <span class="sidebar-link-icon">🧪</span> Mock Tests
+      </a>
+      <a href="chatbot.html" class="sidebar-link">
+        <span class="sidebar-link-icon">🤖</span> AI Doubt Chatbot
+      </a>
+      
+      <div class="sidebar-section-label">Learning</div>
+      <a href="#" class="sidebar-link">
+        <span class="sidebar-link-icon">📊</span> Progress Report
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="sidebar-link-icon">🏆</span> Leaderboard
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="sidebar-link-icon">📅</span> Study Planner
+      </a>
+      
+      <div class="sidebar-section-label">Account</div>
+      <a href="#" class="sidebar-link">
+        <span class="sidebar-link-icon">👤</span> Profile
+      </a>
+      <a href="admin.html" class="sidebar-link">
+        <span class="sidebar-link-icon">⚙️</span> Admin Panel
+      </a>
+      <a href="../index.html" class="sidebar-link">
+        <span class="sidebar-link-icon">🚪</span> Logout
+      </a>
+    </nav>
+    
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">RP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Rahul Patel</div>
+        <div class="sidebar-user-role">⭐ Scholar Level</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">🏠 Dashboard</div>
+        <div class="page-subtitle">સ્વાગત છે, Rahul! | 🔥 12 Day Streak | Sunday, March 15, 2026</div>
+      </div>
+      <div class="page-header-actions">
+        <a href="chatbot.html" class="header-btn">🤖 Ask AI</a>
+        <a href="mocktest.html" class="header-btn primary">🧪 Take Mock Test</a>
+        <button class="header-btn" onclick="toggleSidebar()" style="display:none" id="menuBtn">☰</button>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      
+      <!-- Stats Row -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon">📚</div>
+          <div class="stat-card-value">127</div>
+          <div class="stat-card-label">Videos Watched</div>
+          <div class="stat-card-change">↑ +5 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">✅</div>
+          <div class="stat-card-value">2,340</div>
+          <div class="stat-card-label">Questions Solved</div>
+          <div class="stat-card-change">↑ +120 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🏆</div>
+          <div class="stat-card-value">85%</div>
+          <div class="stat-card-label">Average Score</div>
+          <div class="stat-card-change">↑ +3% from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🔥</div>
+          <div class="stat-card-value">12</div>
+          <div class="stat-card-label">Day Streak</div>
+          <div class="stat-card-change">Personal Best!</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">⭐</div>
+          <div class="stat-card-value">4,750</div>
+          <div class="stat-card-label">Total Points</div>
+          <div class="stat-card-change">↑ Level: Scholar</div>
+        </div>
+      </div>
+      
+      <!-- Row: Chart + Daily Plan -->
+      <div class="dash-grid-3">
+        <div class="chart-container">
+          <div class="chart-title">
+            Weekly Quiz Performance
+            <span class="chart-pill">This Week</span>
+          </div>
+          <div class="bar-chart" id="barChart">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <div class="chart-title">Study Streak</div>
+          <div style="text-align:center;margin-bottom:12px;">
+            <div style="font-size:2.5rem;font-weight:800;background:var(--grad-saffron);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🔥 12</div>
+            <div style="font-size:0.75rem;color:var(--text-secondary);">Consecutive days</div>
+          </div>
+          <div class="streak-grid" id="streakGrid"></div>
+        </div>
+      </div>
+      
+      <!-- Row: Progress Rings + Leaderboard -->
+      <div class="dash-grid-2">
+        <div class="chart-container">
+          <div class="chart-title">
+            Subject Progress
+            <span class="chart-pill">This Month</span>
+          </div>
+          <div class="ring-group" id="ringGroup">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <div class="chart-title">
+            🏆 Leaderboard
+            <span class="chart-pill">Top Students</span>
+          </div>
+          <div class="leaderboard-list" id="leaderboard">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Row: Daily Plan + Badges -->
+      <div class="dash-grid-2">
+        <div class="chart-container">
+          <div class="chart-title">
+            📅 Today's Study Plan
+            <span class="chart-pill">AI Generated</span>
+          </div>
+          <div class="plan-list" id="planList">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <div class="chart-title">
+            🏅 Achievement Badges
+            <span class="chart-pill">12 / 30 Earned</span>
+          </div>
+          <div class="badges-grid" id="badgesGrid">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+  // ===== BAR CHART =====
+  const weekData = [
+    { day: 'Mon', val: 78 },
+    { day: 'Tue', val: 92 },
+    { day: 'Wed', val: 65 },
+    { day: 'Thu', val: 88 },
+    { day: 'Fri', val: 95 },
+    { day: 'Sat', val: 72 },
+    { day: 'Sun', val: 85 }
+  ];
+  const chart = document.getElementById('barChart');
+  weekData.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'bar-item';
+    item.innerHTML = `
+      <div class="bar-val">${d.val}%</div>
+      <div class="bar" style="height:${d.val}%"></div>
+      <div class="bar-label">${d.day}</div>
+    `;
+    chart.appendChild(item);
+  });
+  
+  // ===== STREAK CALENDAR =====
+  const streakGrid = document.getElementById('streakGrid');
+  for (let i = 0; i < 28; i++) {
+    const day = document.createElement('div');
+    day.className = 'streak-day';
+    if (i < 12) day.classList.add('active');
+    if (i === 11) day.classList.add('today');
+    else if (i >= 12 && i < 15) day.classList.add('partial');
+    streakGrid.appendChild(day);
+  }
+  
+  // ===== PROGRESS RINGS =====
+  const subjects = [
+    { name: 'Gujarat History', pct: 72, color: '#FF9933' },
+    { name: 'Bhagavad Gita', pct: 85, color: '#FFD700' },
+    { name: 'GPSC GK', pct: 60, color: '#8B0000' },
+    { name: 'Current Affairs', pct: 48, color: '#4CAF50' },
+    { name: 'Sanskrit', pct: 35, color: '#9C27B0' },
+    { name: 'Indian Culture', pct: 90, color: '#2196F3' },
+  ];
+  const ringGroup = document.getElementById('ringGroup');
+  subjects.forEach(s => {
+    const circumference = 2 * Math.PI * 24;
+    const dash = (s.pct / 100) * circumference;
+    const item = document.createElement('div');
+    item.className = 'ring-item';
+    item.innerHTML = `
+      <svg class="ring-svg" viewBox="0 0 60 60">
+        <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
+        <circle cx="30" cy="30" r="24" fill="none" stroke="${s.color}" stroke-width="5"
+          stroke-dasharray="${dash.toFixed(1)} ${(circumference - dash).toFixed(1)}"
+          stroke-linecap="round" transform="rotate(-90 30 30)"/>
+        <text x="30" y="35" text-anchor="middle" fill="${s.color}" font-size="11" font-weight="bold">${s.pct}%</text>
+      </svg>
+      <div class="ring-label">${s.name}</div>
+    `;
+    ringGroup.appendChild(item);
+  });
+  
+  // ===== LEADERBOARD =====
+  const leaders = [
+    { rank: 1, name: 'Priya Modi', score: 'GPSC Class-1', pts: 6820, you: false },
+    { rank: 2, name: 'Kavya Shah', score: 'Mamlatdar', pts: 5940, you: false },
+    { rank: 3, name: 'Amit Joshi', score: 'PSI Exam', pts: 5340, you: false },
+    { rank: 7, name: 'Rahul Patel', score: 'GPSC Class-2', pts: 4750, you: true },
+    { rank: 8, name: 'Riya Verma', score: 'Talati Exam', pts: 4600, you: false },
+  ];
+  const lb = document.getElementById('leaderboard');
+  leaders.forEach(l => {
+    const item = document.createElement('div');
+    item.className = `leader-item${l.you ? ' you' : ''}`;
+    const initials = l.name.split(' ').map(w=>w[0]).join('');
+    item.innerHTML = `
+      <div class="leader-rank${l.rank <= 3 ? ' top' : ''}">${l.rank <= 3 ? ['🥇','🥈','🥉'][l.rank-1] : l.rank}</div>
+      <div class="leader-avatar">${initials}</div>
+      <div class="leader-info">
+        <div class="leader-name">${l.name}${l.you ? ' <span style="color:var(--saffron);font-size:0.68rem;">(You)</span>' : ''}</div>
+        <div class="leader-score">${l.score}</div>
+      </div>
+      <div class="leader-pts">${l.pts.toLocaleString()}</div>
+    `;
+    lb.appendChild(item);
+  });
+  
+  // ===== DAILY PLAN =====
+  const plans = [
+    { title: 'Gujarat History – Chapter 5: Solanki Dynasty', meta: 'Video Lecture • 35 mins', time: '9:00 AM', done: true },
+    { title: 'GPSC Practice Quiz – History Section', meta: '20 Questions • 20 mins', time: '9:45 AM', done: true },
+    { title: 'Bhagavad Gita – Chapter 3 (Karma Yoga)', meta: 'Video Lecture • 25 mins', time: '11:00 AM', done: false },
+    { title: 'Current Affairs – March 2026 Digest', meta: 'PDF Reading • 30 mins', time: '2:00 PM', done: false },
+    { title: 'Full Mock Test – GPSC Practice Paper 4', meta: 'Timed Exam • 2 hours', time: '4:00 PM', done: false },
+  ];
+  const planList = document.getElementById('planList');
+  plans.forEach(p => {
+    const item = document.createElement('div');
+    item.className = `plan-item${p.done ? ' done' : ''}`;
+    item.innerHTML = `
+      <div class="plan-check">${p.done ? '✓' : ''}</div>
+      <div class="plan-info">
+        <div class="plan-title">${p.title}</div>
+        <div class="plan-meta">${p.meta}</div>
+      </div>
+      <div class="plan-time">${p.time}</div>
+    `;
+    item.addEventListener('click', () => item.classList.toggle('done'));
+    planList.appendChild(item);
+  });
+  
+  // ===== BADGES =====
+  const badges = [
+    { emoji: '🔥', name: 'Streak Master', earned: true },
+    { emoji: '📚', name: '100 Lectures', earned: true },
+    { emoji: '🎯', name: 'Quiz Perfect', earned: true },
+    { emoji: '⚡', name: 'Speed Reader', earned: true },
+    { emoji: '🏆', name: 'Top Scorer', earned: true },
+    { emoji: '🌸', name: 'Culture Expert', earned: true },
+    { emoji: '🕉️', name: 'Gita Scholar', earned: false },
+    { emoji: '🗺️', name: 'History Buff', earned: false },
+    { emoji: '🧠', name: 'AI Master', earned: false },
+    { emoji: '💎', name: 'Diamond Student', earned: false },
+    { emoji: '🚀', name: 'GPSC Ready', earned: false },
+    { emoji: '🌟', name: 'Star Student', earned: false },
+  ];
+  const badgesGrid = document.getElementById('badgesGrid');
+  badges.forEach(b => {
+    const item = document.createElement('div');
+    item.className = `badge-item${b.earned ? ' earned' : ' locked'}`;
+    item.innerHTML = `
+      <span class="badge-emoji">${b.emoji}</span>
+      <div class="badge-name">${b.name}</div>
+    `;
+    item.title = b.earned ? `Earned: ${b.name}` : `Locked: Complete more tasks`;
+    badgesGrid.appendChild(item);
+  });
+  
+  // Animate progress bars on load
+  setTimeout(() => {
+    document.querySelectorAll('.progress-fill').forEach(bar => {
+      bar.style.width = bar.style.width || '0%';
+    });
+  }, 300);
+  </script>
+</body>
+</html>

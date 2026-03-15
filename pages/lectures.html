@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lecture Library – TATTVAYAN</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .filter-bar {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+      padding: 20px 32px;
+      border-bottom: var(--border-gold);
+      background: var(--bg-navy);
+      position: sticky; top: 73px; z-index: 30;
+    }
+    .filter-search {
+      flex: 1; min-width: 200px;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.05);
+      border: var(--border-card);
+      border-radius: var(--radius-full);
+      padding: 10px 16px;
+    }
+    .filter-search input {
+      background: none; border: none; outline: none;
+      color: var(--text-primary); font-size: 0.9rem; flex: 1;
+    }
+    .filter-search input::placeholder { color: var(--text-muted); }
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-tab {
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      border: var(--border-card);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .filter-tab.active, .filter-tab:hover {
+      background: var(--grad-saffron);
+      color: #1a0a00;
+      border-color: transparent;
+    }
+    
+    .lectures-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    .lecture-card {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--transition-mid);
+    }
+    .lecture-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,153,51,0.4);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    
+    .lecture-thumb {
+      position: relative;
+      height: 160px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .lecture-thumb-emoji { font-size: 3rem; }
+    .lecture-play-btn {
+      position: absolute;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: all var(--transition-fast);
+      transform: scale(0.8);
+    }
+    .lecture-card:hover .lecture-play-btn {
+      opacity: 1; transform: scale(1);
+    }
+    
+    .lecture-duration {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+    .lecture-watched {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(76,175,80,0.9);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+    
+    .lecture-body { padding: 16px; }
+    .lecture-cat {
+      font-size: 0.68rem;
+      color: var(--saffron);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .lecture-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .lecture-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .lecture-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding-top: 10px;
+      border-top: var(--border-card);
+    }
+    .lecture-progress-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .lecture-progress-fill {
+      height: 100%;
+      background: var(--grad-saffron);
+      border-radius: 2px;
+    }
+    
+    /* Video Player Modal */
+    .video-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .video-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .video-modal {
+      background: var(--bg-navy);
+      border: var(--border-gold);
+      border-radius: var(--radius-xl);
+      width: 100%; max-width: 860px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: fadeInUp 0.3s ease;
+    }
+    .video-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: var(--border-gold);
+    }
+    .video-modal-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .video-modal-close {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+    }
+    .video-modal-close:hover { color: var(--saffron); }
+    .video-player-area {
+      background: #000;
+      aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+      position: relative;
+    }
+    .video-placeholder-text {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.6); font-size: 0.8rem;
+    }
+    .video-controls {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px;
+      border-top: var(--border-card); background: var(--bg-card);
+    }
+    .video-ctrl-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 1.2rem;
+      transition: color 0.2s;
+    }
+    .video-ctrl-btn:hover { color: var(--saffron); }
+    .video-speed-select {
+      background: rgba(255,255,255,0.08);
+      border: var(--border-card);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .video-notes-panel { padding: 16px 20px; border-top: var(--border-card); }
+    .video-notes-title { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .video-notes-content { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.7; }
+  </style>
+</head>
+<body class="app-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Dashboard</a>
+      <a href="lectures.html" class="sidebar-link active"><span class="sidebar-link-icon">🎥</span> Lecture Library</a>
+      <a href="quiz.html" class="sidebar-link"><span class="sidebar-link-icon">📝</span> Quiz & Practice</a>
+      <a href="mocktest.html" class="sidebar-link"><span class="sidebar-link-icon">🧪</span> Mock Tests</a>
+      <a href="chatbot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span> AI Doubt Chatbot</a>
+      <div class="sidebar-section-label">Learning</div>
+      <a href="#" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Progress Report</a>
+      <a href="#" class="sidebar-link"><span class="sidebar-link-icon">🏆</span> Leaderboard</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="admin.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span> Admin Panel</a>
+      <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">RP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Rahul Patel</div>
+        <div class="sidebar-user-role">⭐ Scholar Level</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">🎥 Lecture Library</div>
+        <div class="page-subtitle">500+ HD Video Lectures • GPSC, Gujarat History, Culture & More</div>
+      </div>
+      <div class="page-header-actions">
+        <a href="chatbot.html" class="header-btn">🤖 Ask AI</a>
+      </div>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search lectures..." id="searchInput" oninput="filterLectures()"/>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-tab" onclick="setFilter('gujarat-history', this)">Gujarat History</button>
+        <button class="filter-tab" onclick="setFilter('bhagavad-gita', this)">Bhagavad Gita</button>
+        <button class="filter-tab" onclick="setFilter('gpsc', this)">GPSC Prep</button>
+        <button class="filter-tab" onclick="setFilter('culture', this)">Indian Culture</button>
+        <button class="filter-tab" onclick="setFilter('spiritual', this)">Spiritual</button>
+        <button class="filter-tab" onclick="setFilter('current-affairs', this)">Current Affairs</button>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <div class="lectures-grid" id="lecturesGrid"></div>
+    </div>
+  </div>
+  
+  <!-- Video Modal -->
+  <div class="video-modal-overlay" id="videoModal">
+    <div class="video-modal">
+      <div class="video-modal-header">
+        <div class="video-modal-title" id="modalTitle">Lecture Title</div>
+        <button class="video-modal-close" onclick="closeVideoModal()">✕</button>
+      </div>
+      <div class="video-player-area">
+        <span>🎬</span>
+        <div class="video-placeholder-text">HD Video Player — Firebase Cloud Storage Integration Ready</div>
+      </div>
+      <div class="video-controls">
+        <button class="video-ctrl-btn">⏮️</button>
+        <button class="video-ctrl-btn">▶️</button>
+        <button class="video-ctrl-btn">⏭️</button>
+        <input type="range" min="0" max="100" value="0" style="flex:1;accent-color:var(--saffron);" />
+        <button class="video-ctrl-btn">🔊</button>
+        <select class="video-speed-select">
+          <option>0.75x</option>
+          <option selected>1x</option>
+          <option>1.25x</option>
+          <option>1.5x</option>
+          <option>2x</option>
+        </select>
+        <button class="video-ctrl-btn">📥</button>
+        <button class="video-ctrl-btn">⛶</button>
+      </div>
+      <div class="video-notes-panel">
+        <div class="video-notes-title">📝 Lecture Notes</div>
+        <div class="video-notes-content" id="modalNotes">Notes will appear here...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+  const lecturesData = [
+    { id:1, cat:'gujarat-history', catLabel:'Gujarat History', title:'Solanki Dynasty – Anekaparampara ane Rajniti', desc:'Gujarat na sone ra dayakao: Solanki Rajao ni gaatha, Siddhapur Rudra Mahalaya ane Gujarat ni golden age.', emoji:'🏛️', dur:'38:24', prog:100, watched:true, bg:'linear-gradient(135deg,#8B0000,#FF4500)', notes:'1. Solanki dynasty ruled Gujarat from 942-1244 CE\n2. Kumarapala was a great Jain ruler\n3. Rudra Mahalaya at Siddhapur was magnificent' },
+    { id:2, cat:'gujarat-history', catLabel:'Gujarat History', title:'Indus Valley Civilization in Gujarat', desc:'Dholavira ane Lothal: Gujarat na prachin sabhyata sthalo ane unna mahattva.', emoji:'🏺', dur:'45:12', prog:72, watched:false, bg:'linear-gradient(135deg,#795548,#FF8A65)', notes:'Key sites: Dholavira (Kutch), Lothal (Ahmedabad district)\nDholavira had advanced water management system' },
+    { id:3, cat:'bhagavad-gita', catLabel:'Bhagavad Gita', title:'Chapter 1: Arjuna Vishada Yoga (Sorrow of Arjuna)', desc:'Mahabharata na Kurukshetra ma Arjuna ni sthiti, unna vichar ane unni dasha.', emoji:'🕉️', dur:'52:08', prog:100, watched:true, bg:'linear-gradient(135deg,#FF6600,#FFD700)', notes:'Arjuna Vishada Yoga: Arjuna sees his relatives in battle\nHe becomes overwhelmed with grief and refuses to fight' },
+    { id:4, cat:'bhagavad-gita', catLabel:'Bhagavad Gita', title:'Chapter 2: Sankhya Yoga – The Nature of Soul', desc:'Atma ni nitya-shashvata satta ane Karma Yoga no upadesh.', emoji:'☯️', dur:'1:02:33', prog:45, watched:false, bg:'linear-gradient(135deg,#E65100,#FFB300)', notes:'The soul is eternal, indestructible\nDuty (Dharma) must be performed without attachment to results' },
+    { id:5, cat:'gpsc', catLabel:'GPSC Preparation', title:'GPSC Class 1-2 Syllabus Overview & Strategy', desc:'Exam pattern, marks distribution, book list ane preparation strategy for GPSC.', emoji:'📋', dur:'1:15:00', prog:30, watched:false, bg:'linear-gradient(135deg,#4A148C,#7B1FA2)', notes:'GPSC Prelims: 200 marks, 200 questions\nTopics: History, Geography, Economics, Science, Current Affairs' },
+    { id:6, cat:'gpsc', catLabel:'GPSC Preparation', title:'Gujarat Current Affairs – February 2026 Complete', desc:'Gujarat government schemes, awards, sports, appointments ane national news.', emoji:'📰', dur:'28:45', prog:0, watched:false, bg:'linear-gradient(135deg,#1a237e,#1976D2)', notes:'Gujarat Budget 2026-27 highlights\nNew railway projects in Gujarat\nGujarat startup ecosystem updates' },
+    { id:7, cat:'culture', catLabel:'Indian Culture', title:'Gujarat Festivals – Navratri, Uttarayan & More', desc:'Gujarat ना main festivals, unna cultural significance ane history.', emoji:'🎊', dur:'41:16', prog:88, watched:true, bg:'linear-gradient(135deg,#1B5E20,#4CAF50)', notes:'Navratri: 9 nights of Garba and Dandiya\nUttarayan (Makar Sankranti): January 14th, kite festival' },
+    { id:8, cat:'culture', catLabel:'Indian Culture', title:'Indian Classical Art Forms & Temple Architecture', desc:'Nagara, Dravida ane Vesara temple styles ane Gujarat ma unни examples.', emoji:'🎨', dur:'55:30', prog:0, watched:false, bg:'linear-gradient(135deg,#880E4F,#E91E63)', notes:'Three main temple architectural styles in India\nNagara style: North India\nDravida style: South India' },
+    { id:9, cat:'spiritual', catLabel:'Spiritual Knowledge', title:'Upanishads – Core Philosophical Teachings', desc:'Brahman, Atman, Maya ane Moksha ni concept Upanishad ma.', emoji:'🌟', dur:'1:08:22', prog:20, watched:false, bg:'linear-gradient(135deg,#006064,#00897B)', notes:'108 Upanishads in total\nMain 10: Isha, Kena, Katha, Mundaka, etc.\nKey concept: Aham Brahmasmi (I am Brahman)' },
+    { id:10, cat:'spiritual', catLabel:'Spiritual Knowledge', title:'Swami Vivekananda – Life & Teachings', desc:'Chicago Speech, Raja Yoga ane Ramakrishna Mission ni foundation.', emoji:'🧘', dur:'49:50', prog:60, watched:false, bg:'linear-gradient(135deg,#4527A0,#7E57C2)', notes:'Swami Vivekananda (1863-1902)\nChicago Speech: September 11, 1893\nFounded Ramakrishna Mission' },
+    { id:11, cat:'current-affairs', catLabel:'Current Affairs', title:'March 2026 – India & World Affairs', desc:'Important events, appointments, awards ane international summits.', emoji:'🌍', dur:'32:18', prog:0, watched:false, bg:'linear-gradient(135deg,#37474F,#546E7A)', notes:'Recent national and international developments\nGovernment schemes and policies\nSports achievements' },
+    { id:12, cat:'gujarat-history', catLabel:'Gujarat History', title:'Freedom Movement & Gujarat\'s Contribution', desc:'1857 Revolt, Dandi March, Gandhi ni bhoomika ane Gujarat ma azaadi ni ladai.', emoji:'🇮🇳', dur:'58:15', prog:0, watched:false, bg:'linear-gradient(135deg,#1B5E20,#FF6600)', notes:'Mahatma Gandhi - Father of the Nation from Porbandar, Gujarat\nDandi March: March 12 - April 5, 1930\nSardar Patel - Iron Man of India' },
+  ];
+  
+  let currentFilter = 'all';
+  
+  function renderLectures(data) {
+    const grid = document.getElementById('lecturesGrid');
+    grid.innerHTML = '';
+    if (data.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-muted);">No lectures found for this filter.</div>';
+      return;
+    }
+    data.forEach(l => {
+      const card = document.createElement('div');
+      card.className = 'lecture-card';
+      card.innerHTML = `
+        <div class="lecture-thumb" style="background:${l.bg}">
+          <span class="lecture-thumb-emoji">${l.emoji}</span>
+          <div class="lecture-play-btn">▶️</div>
+          <div class="lecture-duration">${l.dur}</div>
+          ${l.watched ? '<div class="lecture-watched">✓ Watched</div>' : ''}
+        </div>
+        <div class="lecture-body">
+          <div class="lecture-cat">${l.catLabel}</div>
+          <div class="lecture-title">${l.title}</div>
+          <div class="lecture-desc">${l.desc}</div>
+          <div class="lecture-meta">
+            <span>👤 Expert Faculty</span>
+            <span style="color:var(--saffron);">${l.prog > 0 ? l.prog+'% done' : 'Not started'}</span>
+          </div>
+          ${l.prog > 0 ? `<div class="lecture-progress-bar"><div class="lecture-progress-fill" style="width:${l.prog}%"></div></div>` : ''}
+        </div>
+      `;
+      card.onclick = () => openVideoModal(l);
+      grid.appendChild(card);
+    });
+  }
+  
+  function filterLectures() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = lecturesData;
+    if (currentFilter !== 'all') filtered = filtered.filter(l => l.cat === currentFilter);
+    if (q) filtered = filtered.filter(l => l.title.toLowerCase().includes(q) || l.desc.toLowerCase().includes(q));
+    renderLectures(filtered);
+  }
+  
+  function setFilter(cat, btn) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    filterLectures();
+  }
+  
+  function openVideoModal(l) {
+    document.getElementById('modalTitle').textContent = l.title;
+    document.getElementById('modalNotes').innerHTML = l.notes.replace(/\n/g, '<br/>');
+    document.getElementById('videoModal').classList.add('open');
+  }
+  
+  function closeVideoModal() {
+    document.getElementById('videoModal').classList.remove('open');
+  }
+  
+  document.getElementById('videoModal').addEventListener('click', function(e) {
+    if (e.target === this) closeVideoModal();
+  });
+  
+  renderLectures(lecturesData);
+  </script>
+</body>
+</html>

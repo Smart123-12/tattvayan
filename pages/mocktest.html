@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mock Test Engine – TATTVAYAN</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .mock-selection { max-width: 900px; }
+    .mock-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    .mock-card {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      cursor: pointer;
+      transition: all var(--transition-mid);
+    }
+    .mock-card:hover { transform: translateY(-5px); border-color: rgba(255,153,51,0.4); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .mc-icon { font-size: 2.5rem; margin-bottom: 14px; display:block; }
+    .mc-name { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .mc-meta { display: flex; flex-direction: column; gap: 4px; }
+    .mc-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-secondary); }
+    .mc-badge {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem; font-weight: 700;
+      background: rgba(255,153,51,0.12);
+      border: var(--border-saffron);
+      color: var(--saffron);
+    }
+    
+    /* ===== TEST INTERFACE ===== */
+    .test-interface { display: none; }
+    .test-interface.active { display: flex; gap: 20px; }
+    
+    .test-main { flex: 1; }
+    .test-sidebar-right {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    
+    .test-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      margin-bottom: 16px;
+    }
+    .test-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+    .test-timer-display {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--saffron);
+      font-variant-numeric: tabular-nums;
+    }
+    .test-timer-display.warning { color: #F44336; animation: pulse 1s ease infinite; }
+    .test-submit-btn {
+      padding: 8px 20px;
+      background: var(--deep-red);
+      border: none;
+      border-radius: var(--radius-full);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all var(--transition-fast);
+    }
+    .test-submit-btn:hover { background: var(--deep-red-light); transform: translateY(-1px); }
+    
+    .test-q-card {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+    .test-q-num { font-size: 0.75rem; color: var(--saffron); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+    .test-q-text { font-size: 1rem; font-weight: 600; color: var(--text-primary); line-height: 1.6; margin-bottom: 24px; }
+    .test-options { display: flex; flex-direction: column; gap: 10px; }
+    .test-option {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 16px;
+      border: var(--border-card);
+      background: rgba(255,255,255,0.02);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+    .test-option:hover { border-color: rgba(255,153,51,0.3); background: rgba(255,153,51,0.04); }
+    .test-option.selected { border-color: var(--saffron); background: rgba(255,153,51,0.1); color: var(--text-primary); }
+    .test-option.correct { border-color: #4CAF50; background: rgba(76,175,80,0.1); color: #4CAF50; }
+    .test-option.wrong { border-color: #F44336; background: rgba(244,67,54,0.1); color: #F44336; }
+    .to-letter {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.04);
+    }
+    .test-option.selected .to-letter { background: var(--saffron); border-color: var(--saffron); color: #1a0a00; }
+    
+    .test-nav-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .test-nav-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      border: var(--border-card);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .test-nav-btn:hover { border-color: var(--saffron); color: var(--saffron); }
+    .test-nav-btn.primary { background: var(--grad-saffron); color: #1a0a00; border-color: transparent; }
+    .test-nav-btn.primary:hover { box-shadow: 0 4px 12px rgba(255,153,51,0.4); transform: translateY(-1px); }
+    
+    /* Question Palette */
+    .q-palette-title { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+    .q-palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; }
+    .palette-btn {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .palette-btn.answered { background: #4CAF50; border-color: #4CAF50; color: white; }
+    .palette-btn.current { background: var(--saffron); border-color: var(--saffron); color: #1a0a00; }
+    .palette-btn.flagged { background: #FF9800; border-color: #FF9800; color: white; }
+    
+    .palette-legend { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-secondary); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    
+    /* Result */
+    .mock-result { display: none; }
+    .mock-result.show { display: block; }
+    .result-header-mock {
+      background: linear-gradient(135deg, var(--deep-red), #1a0a00);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 24px;
+      border: var(--border-gold);
+    }
+    .result-big-score { font-size: 5rem; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 8px; }
+    .result-big-label { font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
+    .result-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metric-card {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+    }
+    .metric-val { font-size: 2rem; font-weight: 800; color: var(--text-primary); }
+    .metric-lbl { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+    .analysis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .analysis-subject {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+    .as-name { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .as-score { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .as-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+    .as-fill { height: 100%; background: var(--grad-saffron); border-radius: 2px; }
+  </style>
+</head>
+<body class="app-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Dashboard</a>
+      <a href="lectures.html" class="sidebar-link"><span class="sidebar-link-icon">🎥</span> Lecture Library</a>
+      <a href="quiz.html" class="sidebar-link"><span class="sidebar-link-icon">📝</span> Quiz & Practice</a>
+      <a href="mocktest.html" class="sidebar-link active"><span class="sidebar-link-icon">🧪</span> Mock Tests</a>
+      <a href="chatbot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span> AI Doubt Chatbot</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="admin.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span> Admin Panel</a>
+      <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">RP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Rahul Patel</div>
+        <div class="sidebar-user-role">⭐ Scholar Level</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">🧪 Mock Test Engine</div>
+        <div class="page-subtitle">Full-length GPSC exam simulations with performance analysis</div>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      
+      <!-- Mock Selection -->
+      <div id="mockSelection">
+        <div style="margin-bottom:24px;">
+          <div class="section-badge" style="margin-bottom:8px;">Choose Mock Test</div>
+          <h2 style="font-size:1.4rem;color:var(--text-primary);">GPSC Full-Length Practice Tests</h2>
+        </div>
+        <div class="mock-cards">
+          <div class="mock-card" onclick="startTest('gpsc1')">
+            <span class="mc-icon">📋</span>
+            <div class="mc-name">GPSC Class 1-2 Mock Test 1</div>
+            <div class="mc-meta">
+              <div class="mc-item">📊 200 Questions</div>
+              <div class="mc-item">⏱️ 2 Hours</div>
+              <div class="mc-item">💯 200 Marks</div>
+              <div class="mc-item">❌ -0.33 Negative Marking</div>
+            </div>
+            <div class="mc-badge">Most Practiced</div>
+          </div>
+          <div class="mock-card" onclick="startTest('history')">
+            <span class="mc-icon">🏛️</span>
+            <div class="mc-name">Gujarat History Mastery Test</div>
+            <div class="mc-meta">
+              <div class="mc-item">📊 50 Questions</div>
+              <div class="mc-item">⏱️ 45 Minutes</div>
+              <div class="mc-item">💯 50 Marks</div>
+              <div class="mc-item">✅ No Negative Marking</div>
+            </div>
+            <div class="mc-badge">Popular</div>
+          </div>
+          <div class="mock-card" onclick="startTest('polity')">
+            <span class="mc-icon">⚖️</span>
+            <div class="mc-name">Indian Polity & Constitution</div>
+            <div class="mc-meta">
+              <div class="mc-item">📊 100 Questions</div>
+              <div class="mc-item">⏱️ 90 Minutes</div>
+              <div class="mc-item">💯 100 Marks</div>
+              <div class="mc-item">❌ -0.25 Negative Marking</div>
+            </div>
+            <div class="mc-badge">Important</div>
+          </div>
+        </div>
+        
+        <!-- Previous Scores -->
+        <div class="chart-container" style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);padding:24px;">
+          <div class="chart-title" style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">📈 Recent Mock Test Performance</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+              <thead>
+                <tr style="color:var(--text-secondary);border-bottom:var(--border-card);">
+                  <th style="padding:8px;text-align:left;">Test Name</th>
+                  <th style="padding:8px;text-align:center;">Score</th>
+                  <th style="padding:8px;text-align:center;">Correct</th>
+                  <th style="padding:8px;text-align:center;">Wrong</th>
+                  <th style="padding:8px;text-align:center;">Date</th>
+                  <th style="padding:8px;text-align:center;">Rank</th>
+                </tr>
+              </thead>
+              <tbody id="scoreTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Test Interface -->
+      <div class="test-interface" id="testInterface">
+        <div class="test-main">
+          <div class="test-header-bar">
+            <div class="test-name" id="testNameDisplay">GPSC Mock Test 1</div>
+            <div class="test-timer-display" id="testTimer">2:00:00</div>
+            <button class="test-submit-btn" onclick="submitTest()">Submit Test</button>
+          </div>
+          
+          <div class="test-q-card">
+            <div class="test-q-num" id="testQNum">QUESTION 1 OF 20</div>
+            <div class="test-q-text" id="testQText"></div>
+            <div class="test-options" id="testOptions"></div>
+          </div>
+          
+          <div class="test-nav-btns">
+            <button class="test-nav-btn" onclick="prevQ()">← Previous</button>
+            <button class="test-nav-btn" onclick="flagQ()">🚩 Flag</button>
+            <button class="test-nav-btn" onclick="clearAnswer()">Clear</button>
+            <button class="test-nav-btn primary" onclick="nextQ()">Next →</button>
+          </div>
+        </div>
+        
+        <div class="test-sidebar-right">
+          <div class="chart-container" style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);padding:16px;">
+            <div class="q-palette-title">Question Palette</div>
+            <div class="palette-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#4CAF50;"></div> Answered</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--saffron);"></div> Current</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#FF9800;"></div> Flagged</div>
+              <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.08);"></div> Not Visited</div>
+            </div>
+            <div class="q-palette-grid" id="qPalette"></div>
+            <div style="padding-top:12px;border-top:var(--border-card);">
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">Progress</div>
+              <div style="display:flex;gap:12px;font-size:0.78rem;">
+                <span style="color:#4CAF50;" id="paletteAnswered">Answered: 0</span>
+                <span style="color:var(--text-muted);" id="paletteTotal"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Results -->
+      <div class="mock-result" id="mockResult">
+        <div class="result-header-mock">
+          <div style="font-size:3rem;margin-bottom:12px;" id="resultEmojiBig">🏆</div>
+          <div class="result-big-score" id="mockScoreDisplay">85</div>
+          <div class="result-big-label" id="mockResultLabel">Excellent Performance!</div>
+          <div style="font-size:0.9rem;color:rgba(255,255,255,0.6);">You are in Top 15% among all test takers today</div>
+        </div>
+        
+        <div class="result-metrics">
+          <div class="metric-card">
+            <div class="metric-val" id="mCorrect" style="color:#4CAF50;">0</div>
+            <div class="metric-lbl">Correct Answers</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mWrong" style="color:#F44336;">0</div>
+            <div class="metric-lbl">Wrong Answers</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mSkipped" style="color:#FF9800;">0</div>
+            <div class="metric-lbl">Skipped</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mAccuracy" style="color:var(--gold);">0%</div>
+            <div class="metric-lbl">Accuracy</div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:16px;font-size:0.95rem;font-weight:700;color:var(--text-primary);">📊 Subject-wise Analysis</div>
+        <div class="analysis-grid" id="analysisGrid"></div>
+        
+        <div style="margin-top:24px;display:flex;gap:16px;flex-wrap:wrap;">
+          <button class="btn-primary-hero" onclick="retryTest()">🔄 Retake Test</button>
+          <button class="btn-secondary-hero" onclick="backToMockList()">📋 Other Tests</button>
+          <a href="chatbot.html" class="btn-ghost">🤖 Review with AI</a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+  // Score history
+  const scoreHistory = [
+    { name:'GPSC Mock Test 1', score:85, correct:170, wrong:18, date:'Mar 12, 2026', rank:'#142' },
+    { name:'Gujarat History Test', score:92, correct:46, wrong:2, date:'Mar 10, 2026', rank:'#38' },
+    { name:'GPSC Mock Test 1', score:78, correct:156, wrong:26, date:'Mar 5, 2026', rank:'#287' },
+  ];
+  const tbody = document.getElementById('scoreTable');
+  scoreHistory.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = 'var(--border-card)';
+    const scoreColor = s.score >= 85 ? '#4CAF50' : s.score >= 70 ? '#FF9800' : '#F44336';
+    tr.innerHTML = `
+      <td style="padding:10px 8px;color:var(--text-primary);font-weight:600;">${s.name}</td>
+      <td style="padding:10px 8px;text-align:center;color:${scoreColor};font-weight:800;">${s.score}%</td>
+      <td style="padding:10px 8px;text-align:center;color:#4CAF50;">${s.correct}</td>
+      <td style="padding:10px 8px;text-align:center;color:#F44336;">${s.wrong}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--text-muted);">${s.date}</td>
+      <td style="padding:10px 8px;text-align:center;color:var(--saffron);font-weight:700;">${s.rank}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // Test Questions (Sample set)
+  const testQuestions = [
+    { q:'Gujarat State ni sthapana kyare thaye?', options:['1956','1957','1960','1965'], correct:2, subject:'Gujarat History' },
+    { q:'GPSC stands for?', options:['Gujarat Public Service Commission','Gujarat Police Service Corp','General Public Service Committee','Gujarat Panchayat Service Corporation'], correct:0, subject:'GPSC Knowledge' },
+    { q:'Rani ki Vav is a UNESCO World Heritage Site located in?', options:['Ahmedabad','Patan','Vadodara','Surat'], correct:1, subject:'Gujarat History' },
+    { q:'The Bhagavad Gita contains how many shlokas?', options:['500','600','700','800'], correct:2, subject:'Bhagavad Gita' },
+    { q:'Sardar Vallabhbhai Patel was born in?', options:['Ahmedabad','Nadiad','Anand','Surat'], correct:1, subject:'Historical Figures' },
+    { q:'India\'s National River is?', options:['Ganga','Yamuna','Narmada','Brahmaputra'], correct:0, subject:'Geography' },
+    { q:'The Constitution of India came into effect on?', options:['15 August 1947','26 January 1950','November 26, 1949','30 January 1948'], correct:1, subject:'Indian Constitution' },
+    { q:'Dholavira is located in which district of Gujarat?', options:['Ahmedabad','Surat','Kutch','Rajkot'], correct:2, subject:'Gujarat History' },
+    { q:'Modhera Sun Temple was built during which dynasty?', options:['Maurya','Gupta','Solanki','Rajput'], correct:2, subject:'Gujarat History' },
+    { q:'Article 21 of the Indian Constitution deals with?', options:['Right to Equality','Right to Life and Liberty','Right to Education','Freedom of Speech'], correct:1, subject:'Indian Constitution' },
+    { q:'The first Chief Minister of Gujarat was?', options:['Chimanbhai Patel','Morarji Desai','Jivraj Mehta','Balwantray Mehta'], correct:2, subject:'Gujarat History' },
+    { q:'Which city is known as the "Manchester of India"?', options:['Surat','Vadodara','Ahmedabad','Rajkot'], correct:2, subject:'Geography' },
+    { q:'Navratri festival is associated with worshipping?', options:['Lakshmi','Saraswati','Durga','Parvati'], correct:2, subject:'Indian Culture' },
+    { q:'"Satyameva Jayate" is taken from which Upanishad?', options:['Isha','Mundaka','Katha','Kena'], correct:1, subject:'Indian Culture' },
+    { q:'Gujarat\'s Gir National Park is famous for?', options:['Bengal Tiger','Asiatic Lion','Indian Elephant','One-horned Rhinoceros'], correct:1, subject:'Geography' },
+  ];
+  
+  let currentTest = null;
+  let currentTQ = 0;
+  let answers = {};
+  let flagged = new Set();
+  let testTimer;
+  let totalSeconds;
+  let testStarting = null;
+  
+  function startTest(type) {
+    currentTest = type;
+    currentTQ = 0;
+    answers = {};
+    flagged = new Set();
+    totalSeconds = type === 'gpsc1' ? 7200 : type === 'history' ? 2700 : 5400;
+    
+    document.getElementById('mockSelection').style.display = 'none';
+    document.getElementById('testInterface').classList.add('active');
+    document.getElementById('testNameDisplay').textContent = 
+      type === 'gpsc1' ? 'GPSC Mock Test 1' : type === 'history' ? 'Gujarat History Test' : 'Polity Test';
+    
+    buildPalette();
+    showTestQ();
+    startTimer();
+  }
+  
+  function buildPalette() {
+    const palette = document.getElementById('qPalette');
+    palette.innerHTML = '';
+    document.getElementById('paletteTotal').textContent = `Total: ${testQuestions.length}`;
+    testQuestions.forEach((_, i) => {
+      const btn = document.createElement('button');
+      btn.className = `palette-btn${i === 0 ? ' current' : ''}`;
+      btn.textContent = i + 1;
+      btn.onclick = () => { currentTQ = i; showTestQ(); };
+      palette.appendChild(btn);
+    });
+  }
+  
+  function updatePalette() {
+    const btns = document.querySelectorAll('.palette-btn');
+    let answered = 0;
+    btns.forEach((btn, i) => {
+      btn.className = 'palette-btn';
+      if (answers[i] !== undefined) { btn.classList.add('answered'); answered++; }
+      if (flagged.has(i)) btn.classList.add('flagged');
+      if (i === currentTQ) btn.classList.add('current');
+    });
+    document.getElementById('paletteAnswered').textContent = `Answered: ${answered}`;
+  }
+  
+  function showTestQ() {
+    const q = testQuestions[currentTQ];
+    document.getElementById('testQNum').textContent = `QUESTION ${currentTQ + 1} OF ${testQuestions.length}`;
+    document.getElementById('testQText').textContent = q.q;
+    
+    const opts = document.getElementById('testOptions');
+    opts.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('div');
+      btn.className = `test-option${answers[currentTQ] === i ? ' selected' : ''}`;
+      btn.innerHTML = `<span class="to-letter">${letters[i]}</span>${opt}`;
+      btn.onclick = () => {
+        answers[currentTQ] = i;
+        updatePalette();
+        document.querySelectorAll('.test-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      };
+      opts.appendChild(btn);
+    });
+    updatePalette();
+  }
+  
+  function prevQ() { if (currentTQ > 0) { currentTQ--; showTestQ(); } }
+  function nextQ() { if (currentTQ < testQuestions.length - 1) { currentTQ++; showTestQ(); } }
+  function flagQ() { flagged.has(currentTQ) ? flagged.delete(currentTQ) : flagged.add(currentTQ); updatePalette(); }
+  function clearAnswer() { delete answers[currentTQ]; showTestQ(); }
+  
+  function startTimer() {
+    clearInterval(testTimer);
+    testTimer = setInterval(() => {
+      totalSeconds--;
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      const display = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      const el = document.getElementById('testTimer');
+      el.textContent = display;
+      el.classList.toggle('warning', totalSeconds < 300);
+      if (totalSeconds <= 0) { clearInterval(testTimer); submitTest(); }
+    }, 1000);
+  }
+  
+  function submitTest() {
+    clearInterval(testTimer);
+    let correct = 0, wrong = 0;
+    testQuestions.forEach((q, i) => {
+      if (answers[i] !== undefined) {
+        if (answers[i] === q.correct) correct++;
+        else wrong++;
+      }
+    });
+    const skipped = testQuestions.length - correct - wrong;
+    const pct = Math.round((correct / testQuestions.length) * 100);
+    const accuracy = answers && Object.keys(answers).length > 0 
+      ? Math.round((correct / Object.keys(answers).length) * 100) : 0;
+    
+    document.getElementById('testInterface').classList.remove('active');
+    const result = document.getElementById('mockResult');
+    result.classList.add('show');
+    
+    document.getElementById('mockScoreDisplay').textContent = pct + '%';
+    document.getElementById('mCorrect').textContent = correct;
+    document.getElementById('mWrong').textContent = wrong;
+    document.getElementById('mSkipped').textContent = skipped;
+    document.getElementById('mAccuracy').textContent = accuracy + '%';
+    
+    let emoji = '😊', label = 'Good work!';
+    if (pct >= 85) { emoji = '🏆'; label = 'Outstanding! GPSC Ready!'; }
+    else if (pct >= 70) { emoji = '🌟'; label = 'Excellent Performance!'; }
+    else if (pct >= 50) { emoji = '👍'; label = 'Good Effort!'; }
+    document.getElementById('resultEmojiBig').textContent = emoji;
+    document.getElementById('mockResultLabel').textContent = label;
+    
+    // Subject analysis
+    const subjectScores = {};
+    testQuestions.forEach((q, i) => {
+      if (!subjectScores[q.subject]) subjectScores[q.subject] = { correct: 0, total: 0 };
+      subjectScores[q.subject].total++;
+      if (answers[i] === q.correct) subjectScores[q.subject].correct++;
+    });
+    
+    const ag = document.getElementById('analysisGrid');
+    ag.innerHTML = '';
+    Object.entries(subjectScores).forEach(([sub, data]) => {
+      const pct = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+      const color = pct >= 80 ? '#4CAF50' : pct >= 60 ? '#FF9800' : '#F44336';
+      const div = document.createElement('div');
+      div.className = 'analysis-subject';
+      div.innerHTML = `
+        <div class="as-name">${sub}</div>
+        <div class="as-score" style="color:${color}">${pct}%</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">${data.correct}/${data.total} correct</div>
+        <div class="as-bar"><div class="as-fill" style="width:${pct}%;background:${color}"></div></div>
+      `;
+      ag.appendChild(div);
+    });
+  }
+  
+  function retryTest() {
+    document.getElementById('mockResult').classList.remove('show');
+    startTest(currentTest);
+  }
+  
+  function backToMockList() {
+    clearInterval(testTimer);
+    document.getElementById('mockResult').classList.remove('show');
+    document.getElementById('testInterface').classList.remove('active');
+    document.getElementById('mockSelection').style.display = 'block';
+  }
+  </script>
+</body>
+</html>

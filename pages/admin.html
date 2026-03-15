@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel – TATTVAYAN</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .admin-tabs {
+      display: flex; gap: 0;
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .admin-tab {
+      flex: 1; padding: 10px 16px;
+      border: none; background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+      text-align: center;
+    }
+    .admin-tab.active { background: var(--grad-saffron); color: #1a0a00; }
+    
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    
+    /* Upload Form */
+    .upload-area {
+      border: 2px dashed rgba(255,153,51,0.3);
+      border-radius: var(--radius-xl);
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-mid);
+      background: rgba(255,153,51,0.03);
+    }
+    .upload-area:hover { border-color: var(--saffron); background: rgba(255,153,51,0.05); }
+    .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+    .upload-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .upload-sub { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 20px; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .form-grid-full { grid-column: 1 / -1; }
+    
+    /* Students Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: var(--border-gold);
+      font-weight: 700;
+    }
+    .data-table td {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      border-bottom: var(--border-card);
+    }
+    .data-table tr:hover td { background: rgba(255,153,51,0.03); color: var(--text-primary); }
+    
+    .student-cell { display: flex; align-items: center; gap: 10px; }
+    .student-av {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--grad-saffron);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: #1a0a00;
+      flex-shrink: 0;
+    }
+    .student-name { font-weight: 600; color: var(--text-primary); }
+    
+    .status-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.68rem; font-weight: 700;
+    }
+    .status-active { background: rgba(76,175,80,0.15); color: #4CAF50; border: 1px solid rgba(76,175,80,0.3); }
+    .status-inactive { background: rgba(158,158,158,0.15); color: #9E9E9E; border: 1px solid rgba(158,158,158,0.3); }
+    
+    .action-btn {
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: var(--border-card);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .action-btn:hover { border-color: var(--saffron); color: var(--saffron); }
+    
+    /* Analytics */
+    .analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .analytics-card {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .ac-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
+    
+    .top-course-list { display: flex; flex-direction: column; gap: 12px; }
+    .top-course-item { display: flex; align-items: center; gap: 12px; }
+    .tci-emoji { font-size: 1.4rem; flex-shrink: 0; }
+    .tci-info { flex: 1; }
+    .tci-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .tci-meta { font-size: 0.7rem; color: var(--text-muted); }
+    .tci-students { font-size: 0.82rem; font-weight: 700; color: var(--saffron); }
+    
+    .quiz-stat-list { display: flex; flex-direction: column; gap: 10px; }
+    .qs-item { display: flex; align-items: center; justify-content: space-between; }
+    .qs-name { font-size: 0.82rem; color: var(--text-secondary); }
+    .qs-score {
+      font-size: 0.82rem; font-weight: 700;
+    }
+  </style>
+</head>
+<body class="app-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Dashboard</a>
+      <a href="lectures.html" class="sidebar-link"><span class="sidebar-link-icon">🎥</span> Lecture Library</a>
+      <a href="quiz.html" class="sidebar-link"><span class="sidebar-link-icon">📝</span> Quiz & Practice</a>
+      <a href="mocktest.html" class="sidebar-link"><span class="sidebar-link-icon">🧪</span> Mock Tests</a>
+      <a href="chatbot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span> AI Doubt Chatbot</a>
+      <div class="sidebar-section-label">Admin</div>
+      <a href="admin.html" class="sidebar-link active"><span class="sidebar-link-icon">⚙️</span> Admin Panel</a>
+      <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">AD</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Admin User</div>
+        <div class="sidebar-user-role">🔑 Administrator</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">⚙️ Admin Panel</div>
+        <div class="page-subtitle">Manage lectures, quizzes, students & view platform analytics</div>
+      </div>
+      <div class="page-header-actions">
+        <a href="dashboard.html" class="header-btn">← Back to App</a>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      
+      <!-- Admin Stats -->
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-card-icon">👥</div>
+          <div class="stat-card-value">50,284</div>
+          <div class="stat-card-label">Total Students</div>
+          <div class="stat-card-change">↑ +1,284 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🎥</div>
+          <div class="stat-card-value">524</div>
+          <div class="stat-card-label">Video Lectures</div>
+          <div class="stat-card-change">↑ +12 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">✅</div>
+          <div class="stat-card-value">10,580</div>
+          <div class="stat-card-label">Quiz Questions</div>
+          <div class="stat-card-change">↑ +200 added</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🧪</div>
+          <div class="stat-card-value">2,841</div>
+          <div class="stat-card-label">Mock Tests Taken Today</div>
+          <div class="stat-card-change">↑ Peak activity</div>
+        </div>
+      </div>
+      
+      <!-- Admin Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdmin('upload')">📤 Upload Content</button>
+        <button class="admin-tab" onclick="switchAdmin('students')">👥 Students</button>
+        <button class="admin-tab" onclick="switchAdmin('quiz')">📝 Add Questions</button>
+        <button class="admin-tab" onclick="switchAdmin('analytics')">📊 Analytics</button>
+      </div>
+      
+      <!-- Upload Section -->
+      <div class="admin-section active" id="adminUpload">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div class="chart-container" style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);padding:24px;">
+            <div class="chart-title" style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;">📹 Upload Video Lecture</div>
+            
+            <div class="upload-area" onclick="document.getElementById('videoFile').click()">
+              <div class="upload-icon">🎬</div>
+              <div class="upload-title">Drag & Drop or Click to Upload</div>
+              <div class="upload-sub">Supports MP4, MOV, AVI up to 2GB</div>
+              <span class="btn-primary-hero" style="font-size:0.85rem;padding:10px 24px;">Choose File</span>
+              <input type="file" id="videoFile" accept="video/*" style="display:none"/>
+            </div>
+            
+            <div style="margin-top:20px;" class="form-grid">
+              <div class="form-group form-grid-full">
+                <label class="form-label">Lecture Title</label>
+                <input type="text" class="form-input" placeholder="e.g. Solanki Dynasty - Part 1"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input">
+                  <option>Gujarat History</option>
+                  <option>Bhagavad Gita</option>
+                  <option>GPSC Preparation</option>
+                  <option>Indian Culture</option>
+                  <option>Spiritual Knowledge</option>
+                  <option>Current Affairs</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Difficulty</label>
+                <select class="form-input">
+                  <option>Beginner</option>
+                  <option>Intermediate</option>
+                  <option>Advanced</option>
+                </select>
+              </div>
+              <div class="form-group form-grid-full">
+                <label class="form-label">Description</label>
+                <textarea class="form-input" rows="3" placeholder="Brief description of the lecture content..."></textarea>
+              </div>
+            </div>
+            <button class="btn-primary-hero" style="width:100%;justify-content:center;" onclick="showToast('✓ Lecture uploaded successfully!','success')">
+              📤 Upload Lecture
+            </button>
+          </div>
+          
+          <div class="chart-container" style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);padding:24px;">
+            <div class="chart-title" style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;">📄 Upload Study Material</div>
+            
+            <div class="upload-area" style="margin-bottom:20px;" onclick="document.getElementById('pdfFile').click()">
+              <div class="upload-icon">📄</div>
+              <div class="upload-title">Upload PDF Study Notes</div>
+              <div class="upload-sub">Supports PDF, DOCX up to 50MB</div>
+              <span class="btn-primary-hero" style="font-size:0.85rem;padding:10px 24px;">Choose PDF</span>
+              <input type="file" id="pdfFile" accept=".pdf,.docx" style="display:none"/>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" placeholder="e.g. Gujarat History Complete Notes"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Linked Lecture (optional)</label>
+              <select class="form-input">
+                <option>-- Select Lecture --</option>
+                <option>Solanki Dynasty</option>
+                <option>Bhagavad Gita Chapter 1</option>
+                <option>GPSC Strategy</option>
+              </select>
+            </div>
+            
+            <button class="btn-primary-hero" style="width:100%;justify-content:center;" onclick="showToast('✓ Study material uploaded!','success')">
+              📤 Upload Material
+            </button>
+            
+            <div style="margin-top:20px;padding-top:16px;border-top:var(--border-card);">
+              <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;">📁 Recently Uploaded</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--text-secondary);">
+                  <span>🎥</span>
+                  <span style="flex:1">Gujarat History Ch.5 — Solanki Dynasty</span>
+                  <span style="color:#4CAF50;font-size:0.7rem;">Live</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--text-secondary);">
+                  <span>📄</span>
+                  <span style="flex:1">GPSC 2025 Paper Analysis PDF</span>
+                  <span style="color:#4CAF50;font-size:0.7rem;">Live</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--text-secondary);">
+                  <span>🎥</span>
+                  <span style="flex:1">Bhagavad Gita Chapter 3 Lecture</span>
+                  <span style="color:#FF9800;font-size:0.7rem;">Processing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Students Section -->
+      <div class="admin-section" id="adminStudents">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div class="filter-search" style="flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:var(--border-card);border-radius:var(--radius-full);padding:10px 16px;">
+            <span>🔍</span>
+            <input type="text" placeholder="Search students..." style="background:none;border:none;outline:none;color:var(--text-primary);font-size:0.9rem;flex:1;"/>
+          </div>
+          <button class="header-btn primary" onclick="showToast('Export ready!','info')">📥 Export CSV</button>
+        </div>
+        <div style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);overflow:hidden;">
+          <table class="data-table" id="studentsTable"></table>
+        </div>
+      </div>
+      
+      <!-- Quiz Questions -->
+      <div class="admin-section" id="adminQuiz">
+        <div class="chart-container" style="background:var(--bg-card);border:var(--border-card);border-radius:var(--radius-lg);padding:24px;">
+          <div class="chart-title" style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;">➕ Add New Quiz Question</div>
+          
+          <div class="form-group">
+            <label class="form-label">Question Text</label>
+            <textarea class="form-input" rows="3" placeholder="Enter the MCQ question here..."></textarea>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Option A</label>
+              <div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.75rem;font-weight:700;color:var(--saffron);">A</span><input type="text" class="form-input" style="padding-left:32px;" placeholder="Option A"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Option B</label>
+              <div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.75rem;font-weight:700;color:var(--saffron);">B</span><input type="text" class="form-input" style="padding-left:32px;" placeholder="Option B"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Option C</label>
+              <div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.75rem;font-weight:700;color:var(--saffron);">C</span><input type="text" class="form-input" style="padding-left:32px;" placeholder="Option C"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Option D</label>
+              <div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.75rem;font-weight:700;color:var(--saffron);">D</span><input type="text" class="form-input" style="padding-left:32px;" placeholder="Option D"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correct Answer</label>
+              <select class="form-input">
+                <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Topic</label>
+              <select class="form-input">
+                <option>Gujarat History</option>
+                <option>Bhagavad Gita</option>
+                <option>GPSC General</option>
+                <option>Indian Constitution</option>
+                <option>Geography</option>
+                <option>Current Affairs</option>
+              </select>
+            </div>
+            <div class="form-group form-grid-full">
+              <label class="form-label">Explanation (shown after answer)</label>
+              <textarea class="form-input" rows="3" placeholder="Provide a detailed explanation for this answer..."></textarea>
+            </div>
+          </div>
+          
+          <button class="btn-primary-hero" onclick="showToast('✓ Question added to database!','success')">
+            ➕ Add Question
+          </button>
+          
+          <div style="margin-top:20px;padding-top:16px;border-top:var(--border-card):">
+            <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;">📊 Question Bank Stats</div>
+            <div style="display:flex;gap:20px;font-size:0.78rem;color:var(--text-secondary);margin-top:8px;">
+              <span>Total: <strong style="color:var(--gold);">10,580</strong></span>
+              <span>Gujarat History: <strong style="color:var(--saffron);">2,340</strong></span>
+              <span>GPSC: <strong style="color:var(--saffron);">3,800</strong></span>
+              <span>Gita: <strong style="color:var(--saffron);">840</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analytics -->
+      <div class="admin-section" id="adminAnalytics">
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <div class="ac-title">📚 Top Courses by Enrollment</div>
+            <div class="top-course-list" id="topCourses"></div>
+          </div>
+          
+          <div class="analytics-card">
+            <div class="ac-title">📝 Quiz Performance by Topic</div>
+            <div class="quiz-stat-list" id="quizStats"></div>
+          </div>
+          
+          <div class="analytics-card" style="grid-column:1/-1">
+            <div class="ac-title">📈 Weekly Platform Activity</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;height:120px;">
+              <div id="adminBarChart" style="display:flex;align-items:flex-end;gap:8px;height:100%;flex:1;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+  function switchAdmin(section) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('admin' + section.charAt(0).toUpperCase() + section.slice(1)).classList.add('active');
+  }
+  
+  // Students Table
+  const students = [
+    { name:'Rahul Patel', email:'rahul@example.com', course:'GPSC Class-2', score:'85%', streak:12, status:'active' },
+    { name:'Priya Modi', email:'priya@example.com', course:'GPSC Class-1', score:'92%', streak:28, status:'active' },
+    { name:'Kavya Shah', email:'kavya@example.com', course:'Mamlatdar', score:'78%', streak:5, status:'active' },
+    { name:'Amit Joshi', email:'amit@example.com', course:'PSI Exam', score:'88%', streak:14, status:'active' },
+    { name:'Riya Verma', email:'riya@example.com', course:'Talati', score:'71%', streak:0, status:'inactive' },
+    { name:'Suresh Kumar', email:'suresh@example.com', course:'GPSC Class-3', score:'65%', streak:3, status:'active' },
+    { name:'Meera Desai', email:'meera@example.com', course:'Gram Sevak', score:'80%', streak:9, status:'active' },
+    { name:'Raj Trivedi', email:'raj@example.com', course:'GPSC Class-2', score:'76%', streak:0, status:'inactive' },
+  ];
+  
+  const table = document.getElementById('studentsTable');
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr>
+    <th>Student</th><th>Course</th><th>Avg Score</th><th>Streak</th><th>Status</th><th>Actions</th>
+  </tr>`;
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  students.forEach(s => {
+    const initials = s.name.split(' ').map(w=>w[0]).join('');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="student-cell"><div class="student-av">${initials}</div><div><div class="student-name">${s.name}</div><div style="font-size:0.72rem;color:var(--text-muted);">${s.email}</div></div></div></td>
+      <td>${s.course}</td>
+      <td style="color:${parseFloat(s.score)>=80?'#4CAF50':parseFloat(s.score)>=65?'#FF9800':'#F44336'};font-weight:700;">${s.score}</td>
+      <td>${s.streak > 0 ? '🔥 ' + s.streak + ' days' : '—'}</td>
+      <td><span class="status-pill status-${s.status}">${s.status.charAt(0).toUpperCase()+s.status.slice(1)}</span></td>
+      <td><div style="display:flex;gap:6px;">
+        <button class="action-btn" onclick="showToast('Viewing ${s.name}...','info')">View</button>
+        <button class="action-btn" onclick="showToast('Message sent to ${s.name}!','success')">Message</button>
+      </div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  
+  // Top Courses
+  const courses = [
+    { emoji:'📋', name:'GPSC Preparation', sub:'Class 1 & 2', students:28420 },
+    { emoji:'🏛️', name:'Gujarat History', sub:'Solanki to Modern', students:19840 },
+    { emoji:'🕉️', name:'Bhagavad Gita', sub:'18 Chapters', students:14200 },
+    { emoji:'🌸', name:'Indian Culture', sub:'Art & Traditions', students:9380 },
+    { emoji:'📰', name:'Current Affairs', sub:'Daily Updates', students:7240 },
+  ];
+  const maxS = Math.max(...courses.map(c=>c.students));
+  const tcList = document.getElementById('topCourses');
+  courses.forEach(c => {
+    const pct = (c.students / maxS * 100).toFixed(0);
+    const div = document.createElement('div');
+    div.className = 'top-course-item';
+    div.innerHTML = `
+      <div class="tci-emoji">${c.emoji}</div>
+      <div class="tci-info">
+        <div class="tci-name">${c.name}</div>
+        <div class="tci-meta">${c.sub}</div>
+        <div class="progress-bar" style="height:3px;margin-top:6px;"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="tci-students">${c.students.toLocaleString()}</div>
+    `;
+    tcList.appendChild(div);
+  });
+  
+  // Quiz Stats
+  const qStats = [
+    { topic:'Gujarat History', avg:78, color:'#FF9933' },
+    { topic:'GPSC General', avg:65, color:'#4CAF50' },
+    { topic:'Bhagavad Gita', avg:88, color:'#FFD700' },
+    { topic:'Indian Culture', avg:72, color:'#9C27B0' },
+    { topic:'Geography', avg:60, color:'#2196F3' },
+    { topic:'Constitution', avg:55, color:'#F44336' },
+  ];
+  const qsList = document.getElementById('quizStats');
+  qStats.forEach(q => {
+    const div = document.createElement('div');
+    div.className = 'qs-item';
+    div.innerHTML = `
+      <div class="qs-name">${q.topic}</div>
+      <div style="flex:1;margin:0 12px;">
+        <div class="progress-bar"><div class="progress-fill" style="width:${q.avg}%;background:${q.color}"></div></div>
+      </div>
+      <div class="qs-score" style="color:${q.color}">${q.avg}%</div>
+    `;
+    qsList.appendChild(div);
+  });
+  
+  // Admin Bar Chart
+  const activityData = [
+    { day:'Mon', v:3200 }, { day:'Tue', v:4100 }, { day:'Wed', v:3800 },
+    { day:'Thu', v:5200 }, { day:'Fri', v:4800 }, { day:'Sat', v:6200 }, { day:'Sun', v:5800 }
+  ];
+  const maxV = Math.max(...activityData.map(d=>d.v));
+  const abc = document.getElementById('adminBarChart');
+  activityData.forEach(d => {
+    const pct = (d.v/maxV)*100;
+    const item = document.createElement('div');
+    item.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;';
+    item.innerHTML = `
+      <div style="font-size:0.65rem;color:var(--saffron);font-weight:700;">${(d.v/1000).toFixed(1)}k</div>
+      <div style="width:100%;height:${pct}%;background:var(--grad-saffron);border-radius:4px 4px 0 0;min-height:4px;"></div>
+      <div style="font-size:0.65rem;color:var(--text-muted);">${d.day}</div>
+    `;
+    abc.appendChild(item);
+  });
+  </script>
+</body>
+</html>
