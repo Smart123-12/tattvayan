@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard – TATTVAYAN AI Vidya Platform</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Noto+Serif+Gujarati:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .lb-tabs { display: flex; gap: 0; background: var(--bg-card); border: var(--border-card); border-radius: var(--radius-lg); padding: 4px; margin-bottom: 24px; }
+    .lb-tab { flex: 1; padding: 10px 16px; border: none; background: transparent; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: var(--radius-md); transition: all var(--transition-fast); font-family: var(--font-body); text-align: center; }
+    .lb-tab.active { background: var(--grad-saffron); color: #fff; }
+
+    .lb-podium { display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin-bottom: 40px; padding-top: 40px; }
+    .podium-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .podium-avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; border: 3px solid; }
+    .podium-1 .podium-avatar { width: 80px; height: 80px; font-size: 1.5rem; background: var(--grad-saffron); border-color: #FFD700; box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+    .podium-2 .podium-avatar { width: 66px; height: 66px; font-size: 1.2rem; background: linear-gradient(135deg, #C0C0C0, #A0A0A0); border-color: #C0C0C0; }
+    .podium-3 .podium-avatar { width: 60px; height: 60px; font-size: 1.1rem; background: linear-gradient(135deg, #CD7F32, #A0522D); border-color: #CD7F32; }
+    .podium-name { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); }
+    .podium-score { font-size: 0.78rem; color: var(--saffron-dark); font-weight: 600; }
+    .podium-rank { font-size: 1.5rem; }
+    .podium-bar { border-radius: 12px 12px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; }
+    .podium-1 .podium-bar { width: 100px; height: 120px; background: linear-gradient(to top, rgba(255,215,0,0.1), rgba(255,215,0,0.25)); border: 1px solid rgba(255,215,0,0.3); }
+    .podium-2 .podium-bar { width: 90px; height: 90px; background: linear-gradient(to top, rgba(192,192,192,0.08), rgba(192,192,192,0.2)); border: 1px solid rgba(192,192,192,0.25); }
+    .podium-3 .podium-bar { width: 85px; height: 70px; background: linear-gradient(to top, rgba(205,127,50,0.08), rgba(205,127,50,0.2)); border: 1px solid rgba(205,127,50,0.2); }
+
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th { padding: 14px 16px; text-align: left; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(139,0,0,0.08); font-weight: 700; }
+    .lb-table td { padding: 14px 16px; font-size: 0.88rem; color: var(--text-secondary); border-bottom: 1px solid rgba(139,0,0,0.04); }
+    .lb-table tr { transition: all var(--transition-fast); }
+    .lb-table tr:hover td { background: rgba(255,153,51,0.03); }
+    .lb-table tr.you td { background: rgba(255,153,51,0.06); }
+    .lb-table tr.you { border-left: 3px solid var(--saffron); }
+
+    .lb-rank { font-weight: 700; font-size: 1rem; color: var(--text-primary); min-width: 40px; display: inline-block; }
+    .lb-user { display: flex; align-items: center; gap: 12px; }
+    .lb-av { width: 36px; height: 36px; border-radius: 50%; background: var(--grad-saffron); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .lb-name { font-weight: 600; color: var(--text-primary); }
+    .lb-exam { font-size: 0.72rem; color: var(--text-muted); }
+    .lb-pts { font-weight: 800; color: var(--deep-red); font-size: 1rem; }
+    .lb-streak { font-size: 0.82rem; color: var(--saffron-dark); font-weight: 600; }
+    .lb-you-tag { font-size: 0.68rem; background: rgba(255,153,51,0.12); color: var(--saffron-dark); padding: 2px 8px; border-radius: var(--radius-full); font-weight: 700; margin-left: 8px; }
+
+    .lb-your-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;
+    }
+    .lb-stat-card {
+      background: var(--bg-card); border: var(--border-card); border-radius: var(--radius-lg);
+      padding: 20px; text-align: center;
+    }
+    .lb-stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+    .lb-stat-val { font-size: 1.5rem; font-weight: 800; color: var(--deep-red); }
+    .lb-stat-label { font-size: 0.75rem; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      .lb-podium { flex-wrap: wrap; }
+      .lb-your-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body class="app-layout">
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Dashboard</a>
+      <a href="lectures.html" class="sidebar-link"><span class="sidebar-link-icon">🎥</span> Lecture Library</a>
+      <a href="quiz.html" class="sidebar-link"><span class="sidebar-link-icon">📝</span> Quiz & Practice</a>
+      <a href="mocktest.html" class="sidebar-link"><span class="sidebar-link-icon">🧪</span> Mock Tests</a>
+      <a href="chatbot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span> AI Doubt Solver</a>
+      <div class="sidebar-section-label">Learning</div>
+      <a href="leaderboard.html" class="sidebar-link active"><span class="sidebar-link-icon">🏆</span> Leaderboard</a>
+      <a href="#" class="sidebar-link"><span class="sidebar-link-icon">📅</span> Study Planner</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="subscription.html" class="sidebar-link"><span class="sidebar-link-icon">💎</span> Subscription</a>
+      <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">RP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Rahul Patel</div>
+        <div class="sidebar-user-role">⭐ Scholar Level</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">🏆 Leaderboard</div>
+        <div class="page-subtitle">Compete with fellow aspirants across Gujarat</div>
+      </div>
+      <div class="page-header-actions">
+        <div class="lang-switcher">
+          <button class="lang-btn active">ગુજરાતી</button>
+          <button class="lang-btn">EN</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <!-- Your Stats -->
+      <div class="lb-your-stats">
+        <div class="lb-stat-card"><div class="lb-stat-icon">🏅</div><div class="lb-stat-val">#7</div><div class="lb-stat-label">Your Rank</div></div>
+        <div class="lb-stat-card"><div class="lb-stat-icon">⭐</div><div class="lb-stat-val">4,750</div><div class="lb-stat-label">Total Points</div></div>
+        <div class="lb-stat-card"><div class="lb-stat-icon">🔥</div><div class="lb-stat-val">12</div><div class="lb-stat-label">Day Streak</div></div>
+        <div class="lb-stat-card"><div class="lb-stat-icon">📈</div><div class="lb-stat-val">85%</div><div class="lb-stat-label">Avg Score</div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="lb-tabs">
+        <button class="lb-tab active" onclick="switchLbTab('weekly',this)">This Week</button>
+        <button class="lb-tab" onclick="switchLbTab('monthly',this)">This Month</button>
+        <button class="lb-tab" onclick="switchLbTab('alltime',this)">All Time</button>
+      </div>
+
+      <!-- Podium -->
+      <div class="lb-podium">
+        <div class="podium-item podium-2">
+          <div class="podium-avatar">KS</div>
+          <div class="podium-name">Kavya Shah</div>
+          <div class="podium-score">5,940 pts</div>
+          <div class="podium-bar"><span class="podium-rank">🥈</span></div>
+        </div>
+        <div class="podium-item podium-1">
+          <div class="podium-avatar">PM</div>
+          <div class="podium-name">Priya Modi</div>
+          <div class="podium-score">6,820 pts</div>
+          <div class="podium-bar"><span class="podium-rank">🥇</span></div>
+        </div>
+        <div class="podium-item podium-3">
+          <div class="podium-avatar">AJ</div>
+          <div class="podium-name">Amit Joshi</div>
+          <div class="podium-score">5,340 pts</div>
+          <div class="podium-bar"><span class="podium-rank">🥉</span></div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <div class="chart-container">
+        <table class="lb-table" id="lbTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+  const leaderData = [
+    { rank: 1, name: 'Priya Modi', exam: 'GPSC Class-1', pts: 6820, streak: 28, you: false },
+    { rank: 2, name: 'Kavya Shah', exam: 'Mamlatdar', pts: 5940, streak: 21, you: false },
+    { rank: 3, name: 'Amit Joshi', exam: 'PSI Exam', pts: 5340, streak: 14, you: false },
+    { rank: 4, name: 'Deepa Prajapati', exam: 'GSSSB', pts: 5120, streak: 18, you: false },
+    { rank: 5, name: 'Harsh Trivedi', exam: 'Talati', pts: 4980, streak: 10, you: false },
+    { rank: 6, name: 'Nisha Parmar', exam: 'GPSC Class-2', pts: 4850, streak: 15, you: false },
+    { rank: 7, name: 'Rahul Patel', exam: 'GPSC Class-2', pts: 4750, streak: 12, you: true },
+    { rank: 8, name: 'Riya Verma', exam: 'Talati', pts: 4600, streak: 7, you: false },
+    { rank: 9, name: 'Suresh Kumar', exam: 'GPSC Class-3', pts: 4200, streak: 3, you: false },
+    { rank: 10, name: 'Meera Desai', exam: 'Gram Sevak', pts: 3980, streak: 9, you: false },
+  ];
+
+  const table = document.getElementById('lbTable');
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>Rank</th><th>Student</th><th>Exam Target</th><th>Points</th><th>Streak</th></tr>';
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  leaderData.forEach(l => {
+    const initials = l.name.split(' ').map(w=>w[0]).join('');
+    const tr = document.createElement('tr');
+    if (l.you) tr.className = 'you';
+    const rankIcons = { 1: '🥇', 2: '🥈', 3: '🥉' };
+    tr.innerHTML = `
+      <td><span class="lb-rank">${rankIcons[l.rank] || l.rank}</span></td>
+      <td><div class="lb-user"><div class="lb-av">${initials}</div><div><div class="lb-name">${l.name}${l.you ? '<span class="lb-you-tag">You</span>' : ''}</div></div></div></td>
+      <td>${l.exam}</td>
+      <td><span class="lb-pts">${l.pts.toLocaleString()}</span></td>
+      <td><span class="lb-streak">🔥 ${l.streak} days</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  function switchLbTab(tab, btn) {
+    document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    showToast(`Showing ${tab} leaderboard`, 'info');
+  }
+  </script>
+</body>
+</html>

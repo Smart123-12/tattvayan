@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subscription – TATTVAYAN AI Vidya Platform</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Noto+Serif+Gujarati:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    .sub-plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .sub-plan-card {
+      background: var(--bg-card);
+      border: 1.5px solid rgba(139,0,0,0.06);
+      border-radius: var(--radius-xl);
+      padding: 36px 28px;
+      text-align: center;
+      transition: all var(--transition-mid);
+      position: relative;
+      overflow: hidden;
+    }
+    .sub-plan-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--grad-saffron);
+      opacity: 0.4;
+    }
+    .sub-plan-card.featured {
+      border-color: var(--saffron);
+      box-shadow: 0 12px 48px rgba(255,153,51,0.15);
+      transform: scale(1.03);
+    }
+    .sub-plan-card.featured::before { opacity: 1; height: 5px; }
+    .sub-plan-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 56px rgba(139,0,0,0.1);
+    }
+    .sub-plan-card.featured:hover { transform: scale(1.03) translateY(-8px); }
+    .sub-popular {
+      position: absolute; top: 16px; right: -32px;
+      background: var(--grad-saffron); color: #fff;
+      font-size: 0.68rem; font-weight: 700;
+      padding: 4px 40px; transform: rotate(45deg);
+    }
+    .sub-icon { font-size: 2.5rem; margin-bottom: 16px; display: block; }
+    .sub-name { font-size: 1.2rem; font-weight: 700; color: var(--deep-red); margin-bottom: 8px; font-family: var(--font-heading); }
+    .sub-price { font-size: 2.4rem; font-weight: 800; color: var(--deep-red); margin-bottom: 4px; font-family: var(--font-heading); }
+    .sub-price span { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+    .sub-period { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 24px; }
+    .sub-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; text-align: left; padding: 0 8px; }
+    .sub-features li { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-secondary); }
+    .sub-features li .check { color: #2E7D32; }
+    .sub-features li .cross { color: #ccc; }
+    .sub-btn {
+      width: 100%; padding: 14px; border-radius: var(--radius-full);
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all var(--transition-mid); font-family: var(--font-body);
+      border: none;
+    }
+    .sub-btn-primary { background: var(--grad-saffron); color: #fff; box-shadow: 0 4px 20px rgba(255,153,51,0.35); }
+    .sub-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,153,51,0.5); }
+    .sub-btn-outline { background: transparent; color: var(--deep-red); border: 2px solid rgba(139,0,0,0.15); }
+    .sub-btn-outline:hover { border-color: var(--deep-red); background: rgba(139,0,0,0.04); }
+
+    .current-plan-banner {
+      background: rgba(255,153,51,0.06);
+      border: 1.5px solid rgba(255,153,51,0.2);
+      border-radius: var(--radius-xl);
+      padding: 24px 32px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .cpb-left { display: flex; align-items: center; gap: 16px; }
+    .cpb-icon { font-size: 2rem; }
+    .cpb-title { font-size: 1rem; font-weight: 700; color: var(--deep-red); }
+    .cpb-sub { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .payment-info {
+      background: var(--bg-card);
+      border: var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-top: 40px;
+    }
+    .payment-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .payment-methods {
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .pm-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
+      background: rgba(255,153,51,0.04);
+      border: 1px solid rgba(255,153,51,0.15);
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      flex: 1;
+      min-width: 180px;
+    }
+    .pm-icon { font-size: 1.5rem; }
+
+    @media (max-width: 1024px) {
+      .sub-plans-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+      .sub-plan-card.featured { transform: none; }
+      .sub-plan-card.featured:hover { transform: translateY(-8px); }
+    }
+    @media (max-width: 768px) {
+      .current-plan-banner { flex-direction: column; text-align: center; }
+      .payment-methods { flex-direction: column; }
+    }
+  </style>
+</head>
+<body class="app-layout">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <span class="sidebar-logo-icon">🪔</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">TATTVAYAN</span>
+        <span class="sidebar-logo-sub">AI Vidya Platform</span>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Dashboard</a>
+      <a href="lectures.html" class="sidebar-link"><span class="sidebar-link-icon">🎥</span> Lecture Library</a>
+      <a href="quiz.html" class="sidebar-link"><span class="sidebar-link-icon">📝</span> Quiz & Practice</a>
+      <a href="mocktest.html" class="sidebar-link"><span class="sidebar-link-icon">🧪</span> Mock Tests</a>
+      <a href="chatbot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span> AI Doubt Solver</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="subscription.html" class="sidebar-link active"><span class="sidebar-link-icon">💎</span> Subscription</a>
+      <a href="#" class="sidebar-link"><span class="sidebar-link-icon">👤</span> Profile</a>
+      <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">RP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Rahul Patel</div>
+        <div class="sidebar-user-role">⭐ Free Plan</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-title-area">
+        <div class="page-title">💎 Subscription Plans</div>
+        <div class="page-subtitle">Choose the best plan for your exam preparation</div>
+      </div>
+      <div class="page-header-actions">
+        <a href="dashboard.html" class="header-btn">← Dashboard</a>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <!-- Current Plan -->
+      <div class="current-plan-banner">
+        <div class="cpb-left">
+          <span class="cpb-icon">🆓</span>
+          <div>
+            <div class="cpb-title">Current Plan: Free</div>
+            <div class="cpb-sub">Upgrade to unlock all features and boost your preparation</div>
+          </div>
+        </div>
+        <button class="btn-primary-hero" style="padding:10px 24px;font-size:0.88rem;">Upgrade Now</button>
+      </div>
+
+      <!-- Plans -->
+      <div class="sub-plans-grid">
+        <div class="sub-plan-card">
+          <span class="sub-icon">🆓</span>
+          <div class="sub-name">Free Plan</div>
+          <div class="sub-price">₹0 <span>/month</span></div>
+          <div class="sub-period">Always free</div>
+          <ul class="sub-features">
+            <li><span class="check">✓</span> Limited lectures</li>
+            <li><span class="check">✓</span> Daily quiz</li>
+            <li><span class="check">✓</span> Basic progress</li>
+            <li><span class="cross">✗</span> Full courses</li>
+            <li><span class="cross">✗</span> Mock exams</li>
+            <li><span class="cross">✗</span> AI features</li>
+          </ul>
+          <button class="sub-btn sub-btn-outline" disabled style="opacity:0.5">Current Plan</button>
+        </div>
+        <div class="sub-plan-card featured">
+          <div class="sub-popular">POPULAR</div>
+          <span class="sub-icon">⭐</span>
+          <div class="sub-name">Basic Plan</div>
+          <div class="sub-price">₹499 <span>/month</span></div>
+          <div class="sub-period">Best value</div>
+          <ul class="sub-features">
+            <li><span class="check">✓</span> Full lectures</li>
+            <li><span class="check">✓</span> Daily + Weekly quizzes</li>
+            <li><span class="check">✓</span> Progress analytics</li>
+            <li><span class="check">✓</span> Downloadable notes</li>
+            <li><span class="check">✓</span> Study streaks</li>
+            <li><span class="cross">✗</span> AI doubt solver</li>
+          </ul>
+          <button class="sub-btn sub-btn-primary" onclick="showToast('Redirecting to Razorpay...','info')">Subscribe ₹499/mo</button>
+        </div>
+        <div class="sub-plan-card">
+          <span class="sub-icon">👑</span>
+          <div class="sub-name">Pro Plan</div>
+          <div class="sub-price">₹799 <span>/month</span></div>
+          <div class="sub-period">Everything included</div>
+          <ul class="sub-features">
+            <li><span class="check">✓</span> All Basic features</li>
+            <li><span class="check">✓</span> Full mock exams</li>
+            <li><span class="check">✓</span> AI voice doubt solver</li>
+            <li><span class="check">✓</span> AI study planner</li>
+            <li><span class="check">✓</span> Priority support</li>
+            <li><span class="check">✓</span> Leaderboard</li>
+          </ul>
+          <button class="sub-btn sub-btn-primary" onclick="showToast('Redirecting to Razorpay...','info')">Go Pro ₹799/mo</button>
+        </div>
+      </div>
+
+      <!-- Payment Info -->
+      <div class="payment-info">
+        <div class="payment-title">🔒 Secure Payment via Razorpay</div>
+        <div class="payment-methods">
+          <div class="pm-item"><span class="pm-icon">💳</span> Credit / Debit Card</div>
+          <div class="pm-item"><span class="pm-icon">📱</span> UPI (GPay, PhonePe)</div>
+          <div class="pm-item"><span class="pm-icon">🏦</span> Net Banking</div>
+          <div class="pm-item"><span class="pm-icon">💰</span> Paytm Wallet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/main.js"></script>
+</body>
+</html>

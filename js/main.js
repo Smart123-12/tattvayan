@@ -1,5 +1,6 @@
 // =============================================
-// TATTVAYAN – Main JS
+// TATTVAYAN – Main JS v2.0
+// Enhanced with Gujarati cultural animations
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initHamburger();
   initScrollAnimations();
   initFeatureCards();
+  initExamsScroll();
+  initLangSwitcher();
 });
 
 // ===== PARTICLES =====
@@ -15,8 +18,15 @@ function initParticles() {
   const container = document.getElementById('particles-container');
   if (!container) return;
   
-  const colors = ['rgba(255,153,51,0.25)', 'rgba(139,0,0,0.1)', 'rgba(212,160,23,0.2)', 'rgba(255,100,0,0.15)', 'rgba(255,180,80,0.18)'];
-  const count = window.innerWidth < 768 ? 10 : 20;
+  const colors = [
+    'rgba(255,153,51,0.2)', 
+    'rgba(139,0,0,0.08)', 
+    'rgba(212,160,23,0.15)', 
+    'rgba(255,100,0,0.12)', 
+    'rgba(255,180,80,0.14)',
+    'rgba(255,215,0,0.1)'
+  ];
+  const count = window.innerWidth < 768 ? 8 : 16;
   
   for (let i = 0; i < count; i++) {
     createParticle(container, colors);
@@ -26,7 +36,7 @@ function initParticles() {
     if (container.children.length < count) {
       createParticle(container, colors);
     }
-  }, 2000);
+  }, 3000);
 }
 
 function createParticle(container, colors) {
@@ -34,10 +44,10 @@ function createParticle(container, colors) {
   p.className = 'particle';
   const size = Math.random() * 4 + 1;
   const color = colors[Math.floor(Math.random() * colors.length)];
-  const duration = Math.random() * 15 + 8;
+  const duration = Math.random() * 18 + 10;
   const delay = Math.random() * -20;
   const left = Math.random() * 100;
-  const opacity = Math.random() * 0.6 + 0.2;
+  const opacity = Math.random() * 0.5 + 0.15;
   
   p.style.cssText = `
     width: ${size}px;
@@ -83,27 +93,19 @@ function initHamburger() {
     navLinks.style.display = isOpen ? 'flex' : '';
     navLinks.style.flexDirection = 'column';
     navLinks.style.position = 'fixed';
-    navLinks.style.top = '70px';
+    navLinks.style.top = '66px';
     navLinks.style.left = '0';
     navLinks.style.right = '0';
-    navLinks.style.background = 'rgba(255,255,255,0.98)';
+    navLinks.style.background = 'rgba(255,252,247,0.98)';
     navLinks.style.padding = '20px';
     navLinks.style.gap = '8px';
     navLinks.style.borderBottom = '1px solid rgba(139,0,0,0.1)';
     navLinks.style.zIndex = '99';
+    navLinks.style.boxShadow = '0 8px 24px rgba(139,0,0,0.1)';
+    navLinks.style.backdropFilter = 'blur(20px)';
     
     if (!isOpen) {
-      navLinks.style.display = '';
-      navLinks.style.flexDirection = '';
-      navLinks.style.position = '';
-      navLinks.style.top = '';
-      navLinks.style.left = '';
-      navLinks.style.right = '';
-      navLinks.style.background = '';
-      navLinks.style.padding = '';
-      navLinks.style.gap = '';
-      navLinks.style.borderBottom = '';
-      navLinks.style.zIndex = '';
+      navLinks.removeAttribute('style');
     }
   });
 }
@@ -131,11 +133,14 @@ function initScrollAnimations() {
     observer.observe(el);
   });
   
-  // Also observe general feature/course cards
-  document.querySelectorAll('.feature-card, .course-card, .testimonial-card, .stat-card').forEach((el, i) => {
+  // Observe feature/course/testimonial/stat cards
+  const animElements = document.querySelectorAll(
+    '.feature-card, .course-card, .testimonial-card, .stat-card, .plan-card, .exam-chip'
+  );
+  animElements.forEach((el, i) => {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = `opacity 0.5s ease ${i * 80}ms, transform 0.5s ease ${i * 80}ms`;
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = `opacity 0.5s ease ${i * 70}ms, transform 0.5s ease ${i * 70}ms`;
     observer.observe(el);
   });
 }
@@ -153,7 +158,7 @@ function initFeatureCards() {
         width: ${size}px; height: ${size}px;
         left: ${e.clientX - rect.left - size/2}px;
         top: ${e.clientY - rect.top - size/2}px;
-        background: radial-gradient(circle, rgba(255,153,51,0.3), transparent);
+        background: radial-gradient(circle, rgba(255,153,51,0.2), transparent);
         border-radius: 50%;
         transform: scale(0);
         animation: rippleEffect 0.6s ease-out;
@@ -169,6 +174,48 @@ function initFeatureCards() {
       
       card.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
+    });
+  });
+}
+
+// ===== EXAMS SCROLL AUTO =====
+function initExamsScroll() {
+  const scroll = document.getElementById('examsScroll');
+  if (!scroll) return;
+  
+  let scrollDirection = 1;
+  let scrollSpeed = 0.5;
+  let isPaused = false;
+  
+  scroll.addEventListener('mouseenter', () => isPaused = true);
+  scroll.addEventListener('mouseleave', () => isPaused = false);
+  
+  function autoScroll() {
+    if (!isPaused) {
+      scroll.scrollLeft += scrollDirection * scrollSpeed;
+      if (scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth) {
+        scrollDirection = -1;
+      } else if (scroll.scrollLeft <= 0) {
+        scrollDirection = 1;
+      }
+    }
+    requestAnimationFrame(autoScroll);
+  }
+  autoScroll();
+}
+
+// ===== LANGUAGE SWITCHER =====
+function initLangSwitcher() {
+  document.querySelectorAll('.lang-switcher').forEach(switcher => {
+    switcher.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switcher.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const lang = btn.textContent;
+        if (typeof showToast === 'function') {
+          showToast(`Language: ${lang}`, 'info');
+        }
+      });
     });
   });
 }
@@ -249,9 +296,9 @@ window.showToast = function(msg, type = 'success') {
   
   const toast = document.createElement('div');
   const colors = {
-    success: { bg: 'rgba(76,175,80,0.95)', border: '1px solid rgba(76,175,80,0.5)' },
-    error: { bg: 'rgba(239,83,80,0.95)', border: '1px solid rgba(239,83,80,0.5)' },
-    info: { bg: 'rgba(255,153,51,0.95)', border: '1px solid rgba(255,153,51,0.5)' }
+    success: { bg: 'rgba(46,125,50,0.95)', border: '1px solid rgba(76,175,80,0.5)' },
+    error: { bg: 'rgba(211,47,47,0.95)', border: '1px solid rgba(239,83,80,0.5)' },
+    info: { bg: 'rgba(230,126,0,0.95)', border: '1px solid rgba(255,153,51,0.5)' }
   };
   const c = colors[type] || colors.info;
   
@@ -259,18 +306,23 @@ window.showToast = function(msg, type = 'success') {
     background: ${c.bg};
     border: ${c.border};
     color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 0.88rem;
     font-weight: 600;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    backdrop-filter: blur(12px);
     animation: fadeInUp 0.3s ease;
-    max-width: 300px;
+    max-width: 320px;
     cursor: pointer;
+    font-family: 'Outfit', 'Inter', sans-serif;
   `;
   toast.textContent = msg;
   toast.addEventListener('click', () => toast.remove());
   container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 4000);
+  setTimeout(() => { 
+    toast.style.opacity = '0'; 
+    toast.style.transition = 'opacity 0.3s'; 
+    setTimeout(() => toast.remove(), 300); 
+  }, 4000);
 };
